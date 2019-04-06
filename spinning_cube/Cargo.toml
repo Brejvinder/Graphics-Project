@@ -1,0 +1,9 @@
+[package]
+name = "spinning_cube"
+version = "0.1.0"
+authors = ["Scetch <lucierbrandon@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+glutin = "0.20.0"
+gl = "0.12.0"
