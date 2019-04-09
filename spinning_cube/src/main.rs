@@ -1,6 +1,8 @@
 use glutin::dpi::*;
 use glutin::ContextTrait;
 
+mod shader;
+
 fn main() {
     let mut el = glutin::EventsLoop::new();
 
@@ -23,6 +25,8 @@ fn main() {
     unsafe {
         gl::ClearColor(0.0, 0.0, 0.0, 1.0);
     }
+
+    // println!("{:?}", shader::ShaderProgram::load_from("shader.vs", "shader.fs"));
 
     let mut running = true;
     while running {
