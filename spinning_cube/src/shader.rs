@@ -46,7 +46,24 @@ impl ShaderProgram {
 
             res
         }
+    }
 
+    /// Get a OpenGL Shader Uniform Location from a string name
+    /// We must turn the Rust string into a CString for passing with FFI
+    pub fn get_uniform<U>(&self, name: U) -> gl::types::GLint
+        where U: AsRef<str>
+    {
+        let name = CString::new(name.as_ref()).unwrap();
+
+        unsafe {
+            gl::GetUniformLocation(self.0, name.as_ptr())
+        }
+    }
+
+    pub fn use_program(&self) {
+        unsafe {
+            gl::UseProgram(self.0);
+        }
     }
 }
 

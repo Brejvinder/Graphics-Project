@@ -1,7 +1,15 @@
 use glutin::dpi::*;
 use glutin::ContextTrait;
 
+use cgmath::{ self, Angle, Deg, Point3, Vector3, Matrix4 };
+
+mod cube;
 mod shader;
+
+pub struct RenderContext {
+    projection: Matrix4<f32>,
+    view: Matrix4<f32>,
+}
 
 fn main() {
     let mut el = glutin::EventsLoop::new();
@@ -26,7 +34,17 @@ fn main() {
         gl::ClearColor(0.0, 0.0, 0.0, 1.0);
     }
 
-    // println!("{:?}", shader::ShaderProgram::load_from("shader.vs", "shader.fs"));
+    let ctx = RenderContext {
+        projection: cgmath::perspective(Deg(45.0), 4.0 / 3.0, 0.1, 100.0),
+        view: Matrix4::look_at(
+            Point3::new(4.0, 3.0, -3.0), // Camera location
+            Point3::new(0.0, 0.0, 0.0), // Looking at origin
+            Vector3::new(0.0, 1.0, 0.0), // Y is up
+        ),
+    };
+
+    let cube = cube::Cube::new()
+        .expect("Couldn't create the cube.");
 
     let mut running = true;
     while running {
@@ -47,6 +65,8 @@ fn main() {
         unsafe {
             gl::Clear(gl::COLOR_BUFFER_BIT);
         }
+
+        cube.render(&ctx, 0.0);
 
         win.swap_buffers().expect("Could not swap window buffers");
     }
