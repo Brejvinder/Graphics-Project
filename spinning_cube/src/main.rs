@@ -43,7 +43,7 @@ fn main() {
         ),
     };
 
-    let cube = cube::Cube::new()
+    let mut cube = cube::Cube::new()
         .expect("Couldn't create the cube.");
 
     let mut running = true;

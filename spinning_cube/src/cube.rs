@@ -1,6 +1,6 @@
 use std::{ mem, ptr };
 
-use cgmath::{ Matrix, SquareMatrix, Matrix4 };
+use cgmath::{ Deg, Matrix, SquareMatrix, Matrix4 };
 use gl;
 
 use crate::{ RenderContext, shader::ShaderProgram };
@@ -49,6 +49,7 @@ pub struct Cube {
     vertex_buffer: gl::types::GLuint,
     program: ShaderProgram,
     mvp_location: gl::types::GLint,
+    rot_angle: f32,
 }
 
 impl Cube {
@@ -71,12 +72,20 @@ impl Cube {
                 vertex_buffer: vertex_buffer,
                 program: program,
                 mvp_location: mvp,
+                rot_angle: 0.0,
             })
         }
     }
 
-    pub fn render(&self, ctx: &RenderContext, _delta: f32) {
-        let model = Matrix4::identity(); // For now we won't do anything to the model.
+    pub fn render(&mut self, ctx: &RenderContext, _delta: f32) {
+        // For now we'll just increase the angle.
+        self.rot_angle += 0.5;
+
+        if self.rot_angle >= 360.0 {
+            self.rot_angle = 0.0;
+        }
+
+        let model = Matrix4::from_angle_y(Deg(self.rot_angle));
         let mvp = ctx.projection * ctx.view * model;
 
         unsafe {
