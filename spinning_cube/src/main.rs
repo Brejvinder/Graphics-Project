@@ -1,7 +1,10 @@
+use std::collections::HashSet;
+use std::time::Instant;
+
 use glutin::dpi::*;
 use glutin::ContextTrait;
 
-use cgmath::{ self, Deg, Point3, Vector3, Matrix4 };
+use cgmath::{ self, Deg, Point3, Vector3, Matrix4, InnerSpace };
 
 mod model;
 mod shader;
@@ -9,6 +12,7 @@ mod shader;
 pub struct RenderContext {
     projection: Matrix4<f32>,
     view: Matrix4<f32>,
+    cam_loc: Point3<f32>,
 }
 
 fn main() {
@@ -42,35 +46,89 @@ fn main() {
         gl::Enable(gl::CULL_FACE);
     }
 
-    let ctx = RenderContext {
+    let camera_loc = Point3::new(4.0, 0.0, -3.0);
+    let camera_up = Vector3::new(0.0, 1.0, 0.0);
+    let camera_front = Vector3::new(0.0, 0.0, -1.0);
+
+    let mut ctx = RenderContext {
         projection: cgmath::perspective(Deg(45.0), 4.0 / 3.0, 0.1, 100.0),
         view: Matrix4::look_at(
-            Point3::new(4.0, 3.0, -3.0), // Camera location
+            camera_loc, // Camera location
             Point3::new(0.0, 0.0, 0.0), // Looking at origin
             Vector3::new(0.0, 1.0, 0.0), // Y is up
         ),
+        cam_loc: camera_loc,
     };
+
+    let mut keys = HashSet::new();
 
     let mut model = model::Model::new("assets/suzanne.obj", "assets/shader.vs", "assets/shader.fs")
         .expect("Couldn't create the model.");
-
     let mut rot_angle = 0.0;
+
+    let mut last_frame = Instant::now();
+    let mut delta_time;
 
     let mut running = true;
     while running {
         el.poll_events(|event| {
+            use glutin::{ Event, WindowEvent, DeviceEvent, VirtualKeyCode, ElementState };
+
             match event {
-                glutin::Event::WindowEvent{ event, .. } => match event {
-                    glutin::WindowEvent::CloseRequested => running = false,
-                    glutin::WindowEvent::Resized(logical_size) => {
+                Event::WindowEvent{ event, .. } => match event {
+                    WindowEvent::CloseRequested => running = false,
+                    WindowEvent::Resized(logical_size) => {
                         let dpi_factor = win.get_hidpi_factor();
                         win.resize(logical_size.to_physical(dpi_factor));
                     },
-                    _ => ()
+                    _ => (),
                 },
+                Event::DeviceEvent { event, .. } => match event {
+                    DeviceEvent::Key(key) => {
+                        if let Some(k) = key.virtual_keycode {
+                            match key.state {
+                                ElementState::Pressed => keys.insert(k),
+                                ElementState::Released => keys.remove(&k),
+                            };
+                        }
+                    },
+                    _ => (),   
+                }
                 _ => ()
             }
         });
+
+        // Delta Time
+        let current_frame = Instant::now();
+        delta_time = (current_frame - last_frame).subsec_millis() as f32 / 1000.0;
+        last_frame = current_frame;
+        //
+
+        /*
+        let camera_speed = 2.5 * delta_time;
+
+        if keys.contains(&glutin::VirtualKeyCode::W) {
+            ctx.cam_loc += camera_speed * camera_front;
+        }
+
+        if keys.contains(&glutin::VirtualKeyCode::S) {
+            ctx.cam_loc -= camera_speed * camera_front;
+        }
+
+        if keys.contains(&glutin::VirtualKeyCode::A) {
+            ctx.cam_loc -= camera_front.cross(camera_up).normalize() * camera_speed;
+        }
+
+        if keys.contains(&glutin::VirtualKeyCode::D) {
+            ctx.cam_loc += camera_front.cross(camera_up).normalize() * camera_speed;
+        }
+
+        ctx.view = Matrix4::look_at(
+            ctx.cam_loc,
+            Point3::new(0.0, 0.0, 0.0),
+            Vector3::new(0.0, 1.0, 0.0),
+        );
+        */
 
         unsafe {
             // Clear both the color and depth buffers
@@ -79,7 +137,7 @@ fn main() {
 
         model.render(&ctx, || {
             // Rotate the model about the y axis
-            rot_angle += 0.5;
+            rot_angle += 20.0 * delta_time;
 
             if rot_angle >= 360.0 {
                 rot_angle = 0.0;
