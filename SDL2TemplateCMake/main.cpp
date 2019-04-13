@@ -118,6 +118,7 @@ struct GameResources {
     SDL_Surface* wallFrontTranspose;
     SDL_Surface* wallBackTranspose;
     SDL_Surface* brezScreen;
+    SDL_Surface* brezScreen2;
     SDL_Surface* columnSprite;
     SDL_Surface* healthSprite;
     SDL_Surface* vialSprite;
@@ -141,6 +142,7 @@ struct GameResources {
         SDL_FreeSurface(wallFrontTranspose);
         SDL_FreeSurface(wallBackTranspose);
         SDL_FreeSurface(brezScreen);
+        SDL_FreeSurface(brezScreen2);
         SDL_FreeSurface(display);
         SDL_FreeSurface(columnSprite);
         SDL_FreeSurface(healthSprite);
@@ -775,10 +777,12 @@ void Draw(GameResources* res, uint32_t const frameTime[2]) {
                      Eigen::Vector2f{700, -100}, 0, 150, res->dir.c, res->view, display);
     DrawTwoSidedWall(res->wallFrontTranspose, res->wallBackTranspose, Eigen::Vector2f{700, -100},
                      Eigen::Vector2f{700, 400}, 0, 150, res->dir.c, res->view, display);
-    DrawTwoSidedWall(res->wallFrontTranspose, res->wallBackTranspose, Eigen::Vector2f{700, 400},
-                     Eigen::Vector2f{300, 600}, 0, 150, res->dir.c, res->view, display);
-    DrawTwoSidedWall(res->brezScreen, res->wallBackTranspose, Eigen::Vector2f{300, 600},
+    DrawTwoSidedWall(res->brezScreen, res->wallBackTranspose, Eigen::Vector2f{700, 400},
+                     Eigen::Vector2f{300, 600}, 0, 300, res->dir.c, res->view, display);
+    DrawTwoSidedWall(res->brezScreen2, res->wallBackTranspose, Eigen::Vector2f{300, 600},
                      Eigen::Vector2f{ -300, 600}, 0, 300, res->dir.c, res->view, display);
+    DrawTwoSidedWall(res->wallFrontTranspose, res->wallBackTranspose, Eigen::Vector2f{ -300, 600},
+                     Eigen::Vector2f{ -900, 600}, 0, 150, res->dir.c, res->view, display);
     DrawSprites(res, display);
     DrawFPS(res, display, frameTime);
 }
@@ -872,6 +876,7 @@ void circleBres(int xc, int yc, int r, SDL_Surface* surface, uint32_t color) {
 }
 
 // Function to draw Bezier Curve on SDL_Surface
+// References: https://www.geeksforgeeks.org/cubic-bezier-curve-implementation-in-c/
 SDL_Surface* BezierCurve(SDL_Surface* surface, int x[] , int y[]) {
     SDL_SetSurfaceRLE(surface, 1);
     if (SDL_LockSurface(surface)) {
@@ -976,10 +981,19 @@ int main(int, char* []) {
     // Bezier Curve
     res.brezScreen = SDL_CreateRGBSurfaceWithFormat(0, 500, 400, 32,
                      SDL_PIXELFORMAT_RGBA8888);
-    SDL_FillRect(res.brezScreen, NULL, SDL_MapRGB(res.brezScreen->format, 0xFF, 0xFF, 0xFF));
-    int brezX[4] = {150, 300, 150, 50};
-    int brezY[4] = {100, 50, 300, 250};
+    SDL_FillRect(res.brezScreen, NULL, SDL_MapRGB(res.brezScreen->format, 0, 0, 0));
+    int brezX[4] = {100, 200, 250, 350};
+    int brezY[4] = {300, 250, 100, 50};
     res.brezScreen = BezierCurve(res.brezScreen, brezX, brezY);
+
+    res.brezScreen2 = SDL_CreateRGBSurfaceWithFormat(0, 500, 400, 32,
+                     SDL_PIXELFORMAT_RGBA8888);
+    SDL_FillRect(res.brezScreen2, NULL, SDL_MapRGB(res.brezScreen2->format, 128, 128, 128));
+    int brezX2[4] = {150, 300, 150, 50};
+    int brezY2[4] = {100, 50, 300, 250};
+    res.brezScreen2 = BezierCurve(res.brezScreen2, brezX2, brezY2);
+
+
 
     char pathBuf[128];
     for (size_t i = 0; i < 8; i++) {
