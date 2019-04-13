@@ -1,9 +1,9 @@
 use glutin::dpi::*;
 use glutin::ContextTrait;
 
-use cgmath::{ self, Angle, Deg, Point3, Vector3, Matrix4 };
+use cgmath::{ self, Deg, Point3, Vector3, Matrix4 };
 
-mod cube;
+mod model;
 mod shader;
 
 pub struct RenderContext {
@@ -31,7 +31,15 @@ fn main() {
     }
     
     unsafe {
+        // Set the clear color to all black
         gl::ClearColor(0.0, 0.0, 0.0, 1.0);
+
+        // Enable depth testing
+        gl::Enable(gl::DEPTH_TEST);
+        gl::DepthFunc(gl::LESS);
+        
+        // Enable culling triangles not facing the camera
+        gl::Enable(gl::CULL_FACE);
     }
 
     let ctx = RenderContext {
@@ -43,8 +51,10 @@ fn main() {
         ),
     };
 
-    let mut cube = cube::Cube::new()
-        .expect("Couldn't create the cube.");
+    let mut model = model::Model::new("assets/suzanne.obj", "assets/shader.vs", "assets/shader.fs")
+        .expect("Couldn't create the model.");
+
+    let mut rot_angle = 0.0;
 
     let mut running = true;
     while running {
@@ -63,10 +73,20 @@ fn main() {
         });
 
         unsafe {
-            gl::Clear(gl::COLOR_BUFFER_BIT);
+            // Clear both the color and depth buffers
+            gl::Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
         }
 
-        cube.render(&ctx, 0.0);
+        model.render(&ctx, || {
+            // Rotate the model about the y axis
+            rot_angle += 0.5;
+
+            if rot_angle >= 360.0 {
+                rot_angle = 0.0;
+            }
+
+            Matrix4::from_angle_y(Deg(rot_angle))
+        });
 
         win.swap_buffers().expect("Could not swap window buffers");
     }
