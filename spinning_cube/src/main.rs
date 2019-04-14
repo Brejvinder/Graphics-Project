@@ -4,7 +4,7 @@ use std::time::Instant;
 use glutin::dpi::*;
 use glutin::ContextTrait;
 
-use cgmath::{ self, Deg, Point3, Vector3, Matrix4, InnerSpace };
+use cgmath::{ self, Deg, Point3, Vector3, Matrix4 };
 
 mod model;
 mod shader;
@@ -46,11 +46,15 @@ fn main() {
         gl::Enable(gl::CULL_FACE);
     }
 
+    /*
     let camera_loc = Point3::new(4.0, 0.0, -3.0);
     let camera_up = Vector3::new(0.0, 1.0, 0.0);
     let camera_front = Vector3::new(0.0, 0.0, -1.0);
+    */
 
-    let mut ctx = RenderContext {
+    let camera_loc = Point3::new(4.0, 0.0, -3.0);
+
+    let ctx = RenderContext {
         projection: cgmath::perspective(Deg(45.0), 4.0 / 3.0, 0.1, 100.0),
         view: Matrix4::look_at(
             camera_loc, // Camera location
@@ -75,7 +79,7 @@ fn main() {
     let mut running = true;
     while running {
         el.poll_events(|event| {
-            use glutin::{ Event, WindowEvent, DeviceEvent, VirtualKeyCode, ElementState };
+            use glutin::{ Event, WindowEvent, DeviceEvent, ElementState };
 
             match event {
                 Event::WindowEvent{ event, .. } => match event {
