@@ -60,12 +60,15 @@ fn main() {
         cam_loc: camera_loc,
     };
 
+    // Holds the currently held down keys
     let mut keys = HashSet::new();
 
+    // Load the model
     let mut model = model::Model::new("assets/suzanne.obj", "assets/shader.vs", "assets/shader.fs")
         .expect("Couldn't create the model.");
     let mut rot_angle = 0.0;
 
+    // Delta time book-keeping
     let mut last_frame = Instant::now();
     let mut delta_time;
 

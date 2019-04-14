@@ -31,6 +31,7 @@ impl Model {
               V: AsRef<str>,
               F: AsRef<str>
     {
+        // Load the obj file data from the specified file if it exists.
         let file = File::open(p.as_ref()).map_err(|e| format!("{}", e))?;
         let obj = obj::load_obj(BufReader::new(file)).map_err(|e| format!("{}", e))?;
 
@@ -98,16 +99,19 @@ impl Model {
     pub fn render<F>(&mut self, ctx: &RenderContext, f: F)
         where F: FnOnce() -> Matrix4<f32>
     {
+        // Call the FnOnce to generate the model matrix
         let model = f();
         let mvp = ctx.projection * ctx.view * model;
 
         unsafe {
+            // Use the program and set the uniforms
             self.program.use_program();
             gl::UniformMatrix4fv(self.mvp_location, 1, gl::FALSE, mvp.as_ptr() as *const _);
             gl::UniformMatrix4fv(self.m_location, 1, gl::FALSE, model.as_ptr() as *const _);
             gl::UniformMatrix4fv(self.v_location, 1, gl::FALSE, ctx.view.as_ptr() as *const _);
             gl::Uniform3f(self.light_location, 4.0, 4.0, 4.0); // Light location is at (4, 4, 4)
-
+            
+            // Bind the vertex array and draw the triangles
             gl::BindVertexArray(self.vertex_array);
             gl::DrawElements(gl::TRIANGLES, self.num_indices, gl::UNSIGNED_SHORT, ptr::null());
             gl::BindVertexArray(0);
