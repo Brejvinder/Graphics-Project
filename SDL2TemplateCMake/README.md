@@ -138,9 +138,10 @@ then
 cd COMP-3520-Project/SDL2TemplateCMake/
 ~~~
 
-Next, enter the build directory:
+Next, make and enter the build directory:
 
 ~~~
+mkdir build
 cd build
 ~~~
 
