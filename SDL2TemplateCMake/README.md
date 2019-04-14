@@ -128,6 +128,13 @@ Clone this repository somewhere using Git (in a shell):
 
 ~~~
 git clone https://github.com/Brejvinder/COMP-3520-Project
+~~~
+or
+~~~
+git clone git@github.com:Brejvinder/COMP-3520-Project.git
+~~~
+then
+~~~
 cd COMP-3520-Project/SDL2TemplateCMake/
 ~~~
 
