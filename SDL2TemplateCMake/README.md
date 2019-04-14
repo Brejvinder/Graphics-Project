@@ -80,6 +80,9 @@ The two arrays represent a set of coordinates on the X and Y axis of the screen.
 
 ![](Bezier.png)
 
+## Planned Features
+Implementation work was attempted to produce and display fractals through direct pixel editing of surfaces as with the Bezier function but I couldn't get it to work within the alloted time frame. BSP rendering was also attempted but it was looking like it would take too much time so it was dropped pretty early on (this was before the due date was extended). Fractal attempt is still in the code and displaying on one of the walls.
+
 UWindsor COMP-3520 SDL2 Project Template (CMake version)
 ===
 
