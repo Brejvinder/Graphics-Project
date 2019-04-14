@@ -12,6 +12,8 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <complex>
+#include <iostream>
 
 #include <stdexcept>
 #if _MSC_VER && !__INTEL_COMPILER
@@ -119,6 +121,7 @@ struct GameResources {
     SDL_Surface* wallBackTranspose;
     SDL_Surface* brezScreen;
     SDL_Surface* brezScreen2;
+    SDL_Surface* fracScreen;
     SDL_Surface* columnSprite;
     SDL_Surface* healthSprite;
     SDL_Surface* vialSprite;
@@ -771,8 +774,8 @@ void Draw(GameResources* res, uint32_t const frameTime[2]) {
 
     DrawSky(res, display);
     DrawFloor(res, display);
-    DrawTwoSidedWall(res->wallFrontTranspose, res->wallBackTranspose, Eigen::Vector2f{ -300, -300},
-                     Eigen::Vector2f{300, -300}, 0, 100, res->dir.c, res->view, display);
+    DrawTwoSidedWall(res->fracScreen, res->wallBackTranspose, Eigen::Vector2f{ -300, -300},
+                     Eigen::Vector2f{300, -300}, 0, 200, res->dir.c, res->view, display);
     DrawTwoSidedWall(res->wallFrontTranspose, res->wallBackTranspose, Eigen::Vector2f{300, -300},
                      Eigen::Vector2f{700, -100}, 0, 150, res->dir.c, res->view, display);
     DrawTwoSidedWall(res->wallFrontTranspose, res->wallBackTranspose, Eigen::Vector2f{700, -100},
@@ -875,9 +878,9 @@ void circleBres(int xc, int yc, int r, SDL_Surface* surface, uint32_t color) {
     }
 }
 
-// Function to draw Bezier Curve on SDL_Surface
+// Function to draw a Bezier Curve on SDL_Surface
 // References: https://www.geeksforgeeks.org/cubic-bezier-curve-implementation-in-c/
-SDL_Surface* BezierCurve(SDL_Surface* surface, int x[] , int y[]) {
+void BezierCurve(SDL_Surface* surface, int x[] , int y[]) {
     SDL_SetSurfaceRLE(surface, 1);
     if (SDL_LockSurface(surface)) {
         // TODO: Error surface can't be locked
@@ -903,7 +906,51 @@ SDL_Surface* BezierCurve(SDL_Surface* surface, int x[] , int y[]) {
     }
 
     SDL_UnlockSurface(surface);
-    return surface;
+    // return surface;
+}
+
+// Function to draw a Fractal on SDL_Surface or its supposed to be
+// its just a colorful wall rn
+void Fractal(SDL_Surface* surface, std::complex<double> center, double zoom) {
+    using namespace std;
+    SDL_SetSurfaceRLE(surface, 1);
+    if (SDL_LockSurface(surface)) {
+        // TODO: Error surface can't be locked
+    }
+    const int WIDTH = surface->w;
+    const int HEIGHT = surface->h;
+    const int FLIPS = 24;
+    const double BAIL_OUT = 2.0;
+    int n;
+    int maxiter = (WIDTH / 2) * 0.049715909 * log10(zoom);
+    std::complex<double> z, c;
+    float C;
+
+    for (int f = 0; f < FLIPS; f++) {
+        for  (int y = f; y < HEIGHT; y += FLIPS) {
+            for (int x = 0; x < WIDTH; x++) {
+                // Get the complex poing on gauss space to be calculate
+                z = c = real(center) + ((x - (WIDTH / 2)) / zoom) +
+                        ((imag(center) + ((y - (HEIGHT / 2)) / zoom)) /* _Complex_I*/);
+
+                // Check if point lies within the main cardiod or in the period-2 buld
+                if ( (pow(real(z) - .25, 2) + pow(imag(z), 2)) * (pow(real(z), 2) + (real(z) / 2) + pow(imag(z), 2) - .1875) < pow(imag(z), 2) / 4 ||
+                        pow(real(z) + 1, 2) + pow(imag(z), 2) < .0625 )
+                    n = maxiter;
+                else
+                    // Applies the actual mandelbrot formula on that point
+                    for (n = 0; n <= maxiter && abs(z) < BAIL_OUT; n ++)
+                        z = pow(z, 2) + c;
+
+                C = n - log2f(logf(abs(z)) / M_LN2 );
+
+                ((uint32_t*)surface->pixels)[(y * surface->w) + x] = (n >= maxiter) ? 0 :
+                        SDL_MapRGB( surface->format,
+                                    (1 + sin(C * 0.27 + 5)) * 127., (1 + cos(C * 0.85)) * 127., (1 + sin(C * 0.15)) * 127. );
+            }
+        }
+    }
+    SDL_UnlockSurface(surface);
 }
 
 int main(int, char* []) {
@@ -984,16 +1031,20 @@ int main(int, char* []) {
     SDL_FillRect(res.brezScreen, NULL, SDL_MapRGB(res.brezScreen->format, 0, 0, 0));
     int brezX[4] = {100, 200, 250, 350};
     int brezY[4] = {300, 250, 100, 50};
-    res.brezScreen = BezierCurve(res.brezScreen, brezX, brezY);
+    BezierCurve(res.brezScreen, brezX, brezY);
 
     res.brezScreen2 = SDL_CreateRGBSurfaceWithFormat(0, 500, 400, 32,
-                     SDL_PIXELFORMAT_RGBA8888);
+                      SDL_PIXELFORMAT_RGBA8888);
     SDL_FillRect(res.brezScreen2, NULL, SDL_MapRGB(res.brezScreen2->format, 128, 128, 128));
     int brezX2[4] = {150, 300, 150, 50};
     int brezY2[4] = {100, 50, 300, 250};
-    res.brezScreen2 = BezierCurve(res.brezScreen2, brezX2, brezY2);
+    BezierCurve(res.brezScreen2, brezX2, brezY2);
 
-
+    // Fractal
+    res.fracScreen = SDL_CreateRGBSurfaceWithFormat(0, 300, 300, 32,
+                     SDL_PIXELFORMAT_RGBA8888);
+    SDL_FillRect(res.fracScreen, NULL, SDL_MapRGB(res.brezScreen2->format, 100, 100, 100));
+    Fractal(res.fracScreen, -0.5, res.fracScreen->w * 0.15296875f);
 
     char pathBuf[128];
     for (size_t i = 0; i < 8; i++) {
