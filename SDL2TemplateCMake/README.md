@@ -77,6 +77,7 @@ Two curves are setup to be displayed in main as follows
     BezierCurve(res.brezScreen2, brezX2, brezY2);
 ```
 The two arrays represent a set of coordinates on the X and Y axis of the screen. The curve is computed and then presented to the screen as shown below.
+
 ![](Bezier.png)
 
 UWindsor COMP-3520 SDL2 Project Template (CMake version)
