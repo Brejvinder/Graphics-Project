@@ -1,5 +1,7 @@
 # Spinning Model
 
+![Screenshot](assets/screenshot.png)
+
 ## Breakdown
 
 This project is built with Rust and follows the structure of a Rust project.
