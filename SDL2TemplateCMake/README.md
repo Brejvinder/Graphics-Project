@@ -127,8 +127,8 @@ Once you've installed these packages, you'll be all set to start your first assi
 Clone this repository somewhere using Git (in a shell):
 
 ~~~
-git clone https://github.com/InBetweenNames/SDL2TemplateCMake.git
-cd SDL2TemplateCMake
+git clone https://github.com/Brejvinder/COMP-3520-Project
+cd COMP-3520-Project/SDL2TemplateCMake/
 ~~~
 
 Next, enter the build directory:
