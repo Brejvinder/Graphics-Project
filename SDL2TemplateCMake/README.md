@@ -60,6 +60,25 @@ The SetSurface was used to speed up direct pixel access which in turn required t
 ```
 A note on the usage of pow: I recently discovered when using the pow function that it is better to simply perform the multiplication directly when you are powering less than 4 in cxx as they perform a Taylor Series expansion according to Paul Preney.
 
+Two curves are setup to be displayed in main as follows
+```cpp
+	res.brezScreen = SDL_CreateRGBSurfaceWithFormat(0, 500, 400, 32,
+                     SDL_PIXELFORMAT_RGBA8888);
+    SDL_FillRect(res.brezScreen, NULL, SDL_MapRGB(res.brezScreen->format, 0, 0, 0));
+    int brezX[4] = {100, 200, 250, 350};
+    int brezY[4] = {300, 250, 100, 50};
+    BezierCurve(res.brezScreen, brezX, brezY);
+
+    res.brezScreen2 = SDL_CreateRGBSurfaceWithFormat(0, 500, 400, 32,
+                      SDL_PIXELFORMAT_RGBA8888);
+    SDL_FillRect(res.brezScreen2, NULL, SDL_MapRGB(res.brezScreen2->format, 128, 128, 128));
+    int brezX2[4] = {150, 300, 150, 50};
+    int brezY2[4] = {100, 50, 300, 250};
+    BezierCurve(res.brezScreen2, brezX2, brezY2);
+```
+The two arrays represent a set of coordinates on the X and Y axis of the screen. The curve is computed and then presented to the screen as shown below.
+![](Bezier.png)
+
 UWindsor COMP-3520 SDL2 Project Template (CMake version)
 ===
 
