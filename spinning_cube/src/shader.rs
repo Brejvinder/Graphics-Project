@@ -22,22 +22,28 @@ impl ShaderProgram {
             gl::AttachShader(id, fragment_shader.0);
             gl::LinkProgram(id);
 
+            // Get the length of the info log
             let mut len = 0;
             gl::GetProgramiv(id, gl::INFO_LOG_LENGTH, &mut len);
-            
+
+            // If the info log length is set there has been an error
             let res = if len > 0 {
+                // Buffer to put the info log in and get the info log from OpenGL
                 let mut buf = vec![0; len as usize];
                 gl::GetProgramInfoLog(id, len, ptr::null_mut(), buf.as_mut_ptr() as *mut _);
 
+                // Convert the info log into a Rust string
                 let s = CStr::from_bytes_with_nul(&buf)
                     .expect("Shader info log has malformed nul")
                     .to_string_lossy()
                     .to_string();
 
+                // Delete the program as it did not have successful creation
                 gl::DeleteProgram(id);
 
                 Err(s)
             } else {
+                // The info log is not set therefore the shader program has successfully linked
                 Ok(ShaderProgram(id))
             };
 
@@ -95,18 +101,23 @@ impl Shader {
             gl::ShaderSource(id, 1, [source.as_ptr()].as_ptr() as *const _ as *const *const _, ptr::null_mut());
             gl::CompileShader(id);
 
+            // Get the length of the info log
             let mut len = 0;
             gl::GetShaderiv(id, gl::INFO_LOG_LENGTH, &mut len);
 
+            // If the info log length is set there has been an error
             if len > 0 {
+                // Buffer to put the info log in and get the info log from OpenGL
                 let mut buf = vec![0; len as usize];
                 gl::GetShaderInfoLog(id, len, ptr::null_mut(), buf.as_mut_ptr() as *mut _);
 
+                // Convert the info log into a Rust string
                 let s = CStr::from_bytes_with_nul(&buf)
                     .expect("Shader info log has malformed nul")
                     .to_string_lossy()
                     .to_string();
 
+                // Delete the program as it did not have successful creation
                 gl::DeleteShader(id);
 
                 Err(s)

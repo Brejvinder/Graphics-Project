@@ -4,7 +4,7 @@ use std::time::Instant;
 use glutin::dpi::*;
 use glutin::ContextTrait;
 
-use cgmath::{ self, Deg, Point3, Vector3, Matrix4, InnerSpace };
+use cgmath::{ self, Deg, Point3, Vector3, Matrix4 };
 
 mod model;
 mod shader;
@@ -46,11 +46,15 @@ fn main() {
         gl::Enable(gl::CULL_FACE);
     }
 
+    /*
     let camera_loc = Point3::new(4.0, 0.0, -3.0);
     let camera_up = Vector3::new(0.0, 1.0, 0.0);
     let camera_front = Vector3::new(0.0, 0.0, -1.0);
+    */
 
-    let mut ctx = RenderContext {
+    let camera_loc = Point3::new(4.0, 0.0, -3.0);
+
+    let ctx = RenderContext {
         projection: cgmath::perspective(Deg(45.0), 4.0 / 3.0, 0.1, 100.0),
         view: Matrix4::look_at(
             camera_loc, // Camera location
@@ -60,19 +64,22 @@ fn main() {
         cam_loc: camera_loc,
     };
 
+    // Holds the currently held down keys
     let mut keys = HashSet::new();
 
+    // Load the model
     let mut model = model::Model::new("assets/suzanne.obj", "assets/shader.vs", "assets/shader.fs")
         .expect("Couldn't create the model.");
     let mut rot_angle = 0.0;
 
+    // Delta time book-keeping
     let mut last_frame = Instant::now();
     let mut delta_time;
 
     let mut running = true;
     while running {
         el.poll_events(|event| {
-            use glutin::{ Event, WindowEvent, DeviceEvent, VirtualKeyCode, ElementState };
+            use glutin::{ Event, WindowEvent, DeviceEvent, ElementState };
 
             match event {
                 Event::WindowEvent{ event, .. } => match event {
