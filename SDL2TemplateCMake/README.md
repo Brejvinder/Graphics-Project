@@ -1,7 +1,69 @@
+2.5D SDL CXX Scene
+===
+This part of the project was built on the [UWindsor COMP-3520 SDL2 Project Template (CMake version)](https://github.com/InBetweenNames/SDL2TemplateCMake). Some features of the project come from the template and other were added on, a full list of the features in accordance with the [Project Document]() is provided below.
+- 2D Objects
+- Computed Surfaces: Cubic Bezier and Fractal
+- Basic Scene of Sprites, Double Sided Walls and "wallscreens" to display the computed surfaces
+- Basic Drawing of Objects 
+- Surface Textures
+- User Interface
+
+The implementation of the Cubic Bezier is in the function BezierCurve and is as follows:
+```cpp
+// References: https://www.geeksforgeeks.org/cubic-bezier-curve-implementation-in-c/
+void BezierCurve(SDL_Surface* surface, int x[] , int y[]) {
+    SDL_SetSurfaceRLE(surface, 1);
+    if (SDL_LockSurface(surface)) {
+        // TODO: Error surface can't be locked
+    }
+    uint32_t (*pixels)[surface->w] = (uint32_t(*)[surface->w]) surface->pixels;
+    uint32_t red = SDL_MapRGB(surface->format, 255, 0, 0);
+    //uint32_t green = SDL_MapRGB(surface->format, 0, 255, 0);
+    uint32_t blue = SDL_MapRGB(surface->format, 0, 0, 255);
+
+    circleBres(x[0], y[0], 8, surface, blue);
+    circleBres(x[1], y[1], 8, surface, blue);
+    circleBres(x[2], y[2], 8, surface, blue);
+    circleBres(x[3], y[3], 8, surface, blue);
+    // Bezier
+    double xu = 0.0 , yu = 0.0 , u = 0.0 ;
+    for (u = 0.0 ; u <= 1.0 ; u += 0.0001) {
+        xu = pow(1 - u, 3) * x[0] + 3 * u * pow(1 - u, 2) * x[1] + 3 * pow(u, 2) * (1 - u) * x[2]
+             + pow(u, 3) * x[3];
+        yu = pow(1 - u, 3) * y[0] + 3 * u * pow(1 - u, 2) * y[1] + 3 * pow(u, 2) * (1 - u) * y[2]
+             + pow(u, 3) * y[3];
+
+        pixels[(int)xu][(int)yu] = red;
+    }
+
+    SDL_UnlockSurface(surface);
+    // return surface;
+}
+```
+The function takes in a surface to which the pixels are directly modified with the Bezier Curve drawn onto it. The surface is then applied to the front side of the two sided wall and rendered in the scene.
+```cpp
+SDL_SetSurfaceRLE(surface, 1);
+SDL_LockSurface(surface);
+SDL_UnlockSurface(surface);
+```
+The SetSurface was used to speed up direct pixel access which in turn required the surface to be locked when being edited. This was done because direct pixel access to my knowledge isn't recommended because it is slow and has to be optimized manually. The computing of the Cubic Bezier curve is done in the following parts.
+```cpp
+    double xu = 0.0 , yu = 0.0 , u = 0.0 ;
+    for (u = 0.0 ; u <= 1.0 ; u += 0.0001) {
+        xu = pow(1 - u, 3) * x[0] + 3 * u * pow(1 - u, 2) * x[1] + 3 * pow(u, 2) * (1 - u) * x[2]
+             + pow(u, 3) * x[3];
+        yu = pow(1 - u, 3) * y[0] + 3 * u * pow(1 - u, 2) * y[1] + 3 * pow(u, 2) * (1 - u) * y[2]
+             + pow(u, 3) * y[3];
+
+        pixels[(int)xu][(int)yu] = red;
+    }
+```
+A note on the usage of pow: I recently discovered when using the pow function that it is better to simply perform the multiplication directly when you are powering less than 4 in cxx as they perform a Taylor Series expansion according to Paul Preney.
+
 UWindsor COMP-3520 SDL2 Project Template (CMake version)
 ===
 
-** For a live demo of this code, [click here](https://inbetweennames.github.io/SDL2TemplateCMake/) **
+** For a live demo of THE TEMPLATE code, [click here](https://inbetweennames.github.io/SDL2TemplateCMake/) **
 
 This template is intended for students in the COMP-3520 Introduction to Computer Graphics course
 at the University of Windsor, however it should serve as a useful template for anyone interested in
@@ -21,21 +83,9 @@ On Debian based systems, the packages will probably be called `libsdl2-dev` and 
 On Arch Linux, look for the packages `sdl2` and `sdl2_ttf`.
 
 Mac users should be able to use Homebrew or a similar package manager to install the needed dependencies.
-If you need help, just send me an email.
 
 Demo
 ---
-
-This repository contains source code for some 2.5D rendering functions written
-for software rendering.  The code needs a bit of cleaning up, but otherwise
-should work fine.  Pull requests are welcome to improve the code.
-
-The code is written in mostly C such that students without a C++ background
-can more easily understand it.  More C++ parts may be added over time.
-There are some parts that need to be overhauled,
-like the conversion from floating point coordinates to integer coordinates.
-However, the basic ideas should be evident.  In class, we'll discuss how
-this would have been implemented using fixed-point arithmetic.
 
 A live demo compiled using Emscripten and WebAssembly is available [here](https://inbetweennames.github.io/SDL2TemplateCMake/)
 
@@ -99,35 +149,3 @@ cd build-wasm
 ~~~
 
 This will configure, compile, link, and run your project directly in your web browser.
-
-The demo
----
-
-The demo code will change periodically to help you with your newest assignments.
-You can clone this project as many times as you need for different assignments.
-
-Recommended practices
----
-
-Students who know C++ are encouraged to use it, however, C++ is not a requirement for the course.
-The sample code provided is mostly C compatible for the benefit of students who haven't had much C++ exposure yet.
-
-When we get to the more mathy parts of the course, if you have a good handle on C++, consider using
-[Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page) for your Linear Algebra needs.
-
-Extra goodies:
----
-
-Although this template has everything you need to succeed in the course, in your own personal projects
-it's likely you'll want to go even further.  Consider adding the following libraries for your arsenal:
-
-* [SDL2_image](https://www.libsdl.org/projects/SDL_image/) for easy image loading from a variety of formats
-* [SDL2_net](https://www.libsdl.org/projects/SDL_net/) for a basic cross-platform networking library
-* [SDL2_mixer](https://www.libsdl.org/projects/SDL_mixer/) for sound rendering
-* [SDL2_rtf](https://www.libsdl.org/projects/SDL_rtf/) for basic document handling (RTF)
-
-Bugs:
----
-
-If you find any problems with the template, please let me know by either creating an Issue on the project page or sending
-me an email.
