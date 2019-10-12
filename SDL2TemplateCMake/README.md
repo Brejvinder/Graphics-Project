@@ -127,15 +127,15 @@ Once you've installed these packages, you'll be all set to start your first assi
 Clone this repository somewhere using Git (in a shell):
 
 ~~~
-git clone https://github.com/Brejvinder/COMP-3520-Project
+git clone https://github.com/Brejvinder/Graphics-Project
 ~~~
 or
 ~~~
-git clone git@github.com:Brejvinder/COMP-3520-Project.git
+git clone git@github.com:Brejvinder/Graphics-Project.git
 ~~~
 then
 ~~~
-cd COMP-3520-Project/SDL2TemplateCMake/
+cd Graphics-Project/SDL2TemplateCMake/
 ~~~
 
 Next, make and enter the build directory:
