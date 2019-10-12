@@ -1,4 +1,4 @@
-# COMP-3520-Project
+# Graphics-Project
 Authors:
 - [Brandon Lucier](https://github.com/Scetch)
 - Brejvinder
